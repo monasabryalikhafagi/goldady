@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -42,4 +44,24 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Get the phone associated with the user.
+     */
+    public function internalSafe(): HasOne
+    {
+        return $this->hasOne(Safe::class)->where('type','internal');
+    }
+    /**
+     * Get the phone associated with the user.
+     */
+    public function externalSafe(): HasOne
+    {
+        return $this->hasOne(Safe::class)->where('type','external');
+    }
+
+    public function golds():HasManyThrough
+    {
+        return $this->hasManyThrough(Gold::class, Safe::class);
+    }
 }
